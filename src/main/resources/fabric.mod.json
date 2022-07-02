@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "fragx",
+  "version": "${version}",
+  "name": "FragX",
+  "description": "Test mod for various systems related to minecraft clients.",
+  "authors": [
+    "stanuwu"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/FragX/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "stanuwu.fragx.client.FragXClient"
+    ],
+    "main": [
+      "stanuwu.fragx.FragX"
+    ]
+  },
+  "mixins": [
+    "FragX.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.8",
+    "fabric": "*",
+    "minecraft": "1.18.2"
+  }
+}
