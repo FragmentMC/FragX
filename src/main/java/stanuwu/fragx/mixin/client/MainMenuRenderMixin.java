@@ -27,11 +27,13 @@ public class MainMenuRenderMixin {
         font2.drawString(matrices, test, 50, 50 + y, 0, Color.ORANGE);
         font2.drawString(matrices, test, 50 + x, 50 + y, 0, Color.ORANGE);
 
-        font.drawString(matrices, "NEW TEST", 25, 100, 0, new Color(255, 0, 125, 200));
+        font.drawString(matrices, "NEW TEST", 25, 100, 0, new Color(255, 0, 125, 200), new Color(0, 255, 125, 200));
         font.drawString(matrices, "LOL", 300, 100, 0, Color.CYAN);
         font.drawCenteredString(matrices, "LOL", 300, 100, 0, Color.CYAN);
 
         font.drawCenteredStringShadow(matrices, "TEST", 150, 100, 0, new Color(255, 255, 0, 125));
         font2.drawStringShadow(matrices, "TEST 2", 100, 50, 0, Color.WHITE);
+
+        font.drawString(matrices, "<><><><>", 25, 200, 0, Color.ORANGE, Color.BLACK);
     }
 }
