@@ -13,12 +13,12 @@ import java.awt.*;
 public class MainMenuRenderTest {
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
         //just some testing
-        //Render2d.rounded_rect(100, 100, 20, 20, 5, new Color(255, 125, 0, 125));
-        //Render2d.rounded_rect(50, 50, 50, 50, 10, Color.ORANGE);
-        //Render2d.rect(50, 150, 50, 50, Color.ORANGE, Color.BLACK, Color.RED, Color.MAGENTA);
-        //Render2d.rounded_rect(125, 150, 50, 50, 15, Color.ORANGE, Color.BLACK, Color.RED, Color.MAGENTA);
-        //Render2d.rect(200, 25, 200, 200, Color.GREEN);
-        //Render2d.rounded_rect(200, 25, 200, 200, 30, Color.RED);
+        Render2d.rounded_rect(100, 100, 20, 20, 5, new Color(255, 125, 0, 125));
+        Render2d.rounded_rect(50, 50, 50, 50, 10, Color.ORANGE);
+        Render2d.rect(50, 150, 50, 50, Color.ORANGE, Color.BLACK, Color.RED, Color.MAGENTA);
+        Render2d.rounded_rect(125, 150, 50, 50, 15, Color.ORANGE, Color.BLACK, Color.RED, Color.MAGENTA);
+        Render2d.rect(200, 25, 200, 200, Color.GREEN);
+        Render2d.rounded_rect(200, 25, 200, 200, 30, Color.RED);
 
         Identifier logo = new Identifier("fragx", "textures/fragment_r.png");
         Render2d.texture_rect_full(200, 25, 200, 200, logo);
