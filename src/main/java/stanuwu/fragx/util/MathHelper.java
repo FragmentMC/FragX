@@ -2,6 +2,9 @@ package stanuwu.fragx.util;
 
 import lombok.experimental.UtilityClass;
 
+/**
+ * Contains math functions.
+ */
 @UtilityClass
 public class MathHelper {
 

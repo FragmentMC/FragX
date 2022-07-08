@@ -5,6 +5,9 @@ import net.minecraft.util.math.MathHelper;
 
 import java.awt.*;
 
+/**
+ * Contains functionality related to colors.
+ */
 @UtilityClass
 public class ColorHelper {
     /**
@@ -25,7 +28,26 @@ public class ColorHelper {
         );
     }
 
+    /**
+     * Interpolate between 2 colors.
+     *
+     * @param color1   First color
+     * @param color2   Second color
+     * @param position Position between the colors
+     * @return Interpolated color
+     */
     private int interpolate(int color1, int color2, float position) {
         return (int) (color1 + position * (color2 - color1));
+    }
+
+    /**
+     * Gives the given color the given alpha value.
+     *
+     * @param color Color
+     * @param alpha Alpha value
+     * @return Color with given alpha
+     */
+    public Color withAlpha(Color color, int alpha) {
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
     }
 }

@@ -1,13 +1,15 @@
 package stanuwu.fragx.client.render.font;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.render.*;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Matrix4f;
+import stanuwu.fragx.client.render.buffer.BufferBuilder2d;
+import stanuwu.fragx.client.render.buffer.VertexModes;
+import stanuwu.fragx.client.render.shader.Shaders;
 import stanuwu.fragx.util.ColorHelper;
 
 import java.awt.*;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL14.glBlendFuncSeparate;
+import static org.lwjgl.opengl.GL33.GL_TRIANGLES;
 
 /**
  * Draws fonts on the screen and provides information about them.
@@ -15,8 +17,9 @@ import java.awt.*;
 public class TTFFontRenderer {
     private final TTFFont font;
 
-    private final int SPACING = 2;
-    private final Color SHADOW_COLOR = new Color(0, 0, 0, 125);
+    //font is scaled down to prevent it from being pixelated because of minecraft gui scaling
+    private final int upscale_factor = 3;
+    private final float downscale_factor = 1f / (2 * upscale_factor);
 
     /**
      * Creates a new TTFFontRenderer with the given parameters.
@@ -26,7 +29,7 @@ public class TTFFontRenderer {
      * @param anti_alias Should anti-aliasing be enabled
      */
     public TTFFontRenderer(String name, int size, boolean anti_alias) {
-        this.font = new TTFFont(name, size * 2, anti_alias);
+        this.font = new TTFFont(name, size * upscale_factor, anti_alias);
     }
 
     public TTFFontRenderer(String name, int size) {
@@ -34,194 +37,96 @@ public class TTFFontRenderer {
     }
 
     /**
-     * Render a text with a shadow on the screen using the font of the font renderer.
-     *
-     * @param matrixStack Current matrix stack
-     * @param text        Text to render
-     * @param x           X position
-     * @param y           Y position
-     * @param z           Z position
-     * @param color       Color of the text
-     */
-    public void drawStringShadow(MatrixStack matrixStack, String text, float x, float y, float z, Color color) {
-        drawString(matrixStack, text, x - (float) this.getWidth(text) + 0.5f, y - (float) this.getHeight() + 0.5f, z, SHADOW_COLOR, SHADOW_COLOR);
-        drawString(matrixStack, text, x - (float) this.getWidth(text), y - (float) this.getHeight(), z, color);
-    }
-
-    /**
      * Render a centered text on the screen using the font of the font renderer.
      *
-     * @param matrixStack Current matrix stack
-     * @param text        Text to render
-     * @param x           X position
-     * @param y           Y position
-     * @param z           Z position
-     * @param color       Color of the text
+     * @param text  Text to render
+     * @param x     X position
+     * @param y     Y position
+     * @param color Color of the text
      */
-    public void drawCenteredString(MatrixStack matrixStack, String text, float x, float y, float z, Color color) {
-        drawString(matrixStack, text, x - (float) this.getWidth(text) / 2, y - (float) this.getHeight() / 2, z, color);
-    }
-
-    /**
-     * Render a centered text with a shadow on the screen using the font of the font renderer.
-     *
-     * @param matrixStack Current matrix stack
-     * @param text        Text to render
-     * @param x           X position
-     * @param y           Y position
-     * @param z           Z position
-     * @param color       Color of the text
-     */
-    public void drawCenteredStringShadow(MatrixStack matrixStack, String text, float x, float y, float z, Color color) {
-        drawStringShadow(matrixStack, text, x - (float) this.getWidth(text) / 2, y - (float) this.getHeight() / 2, z, color);
+    public void drawCenteredString(String text, float x, float y, Color color) {
+        drawString(text, x - this.getWidth(text) / 2, y - this.getHeight() / 2, color);
     }
 
     /**
      * Render a text on the screen using the font of the font renderer.
      *
-     * @param matrixStack Current matrix stack
-     * @param text        Text to render
-     * @param x           X position
-     * @param y           Y position
-     * @param z           Z position
-     * @param color       Color of the text
+     * @param text  Text to render
+     * @param x     X position
+     * @param y     Y position
+     * @param color Color of the text
      */
-    public void drawString(MatrixStack matrixStack, String text, float x, float y, float z, Color color) {
-        drawString(matrixStack, text, x, y, z, color, color);
-    }
-
-    /**
-     * Render a text with a shadow on the screen using the font of the font renderer.
-     *
-     * @param matrixStack Current matrix stack
-     * @param text        Text to render
-     * @param x           X position
-     * @param y           Y position
-     * @param z           Z position
-     * @param color1      Color of the start of the gradient
-     * @param color1      Color of the end of the gradient
-     */
-    public void drawStringShadow(MatrixStack matrixStack, String text, float x, float y, float z, Color color1, Color color2) {
-        drawString(matrixStack, text, x - (float) this.getWidth(text) + 0.5f, y - (float) this.getHeight() + 0.5f, z, SHADOW_COLOR, SHADOW_COLOR);
-        drawString(matrixStack, text, x - (float) this.getWidth(text), y - (float) this.getHeight(), z, color1, color2);
+    public void drawString(String text, float x, float y, Color color) {
+        drawString(text, x, y, color, color, color, color);
     }
 
     /**
      * Render a centered text on the screen using the font of the font renderer.
      *
-     * @param matrixStack Current matrix stack
-     * @param text        Text to render
-     * @param x           X position
-     * @param y           Y position
-     * @param z           Z position
-     * @param color1      Color of the start of the gradient
-     * @param color1      Color of the end of the gradient
+     * @param text   Text to render
+     * @param x      X position
+     * @param y      Y position
+     * @param color1 Top left color
+     * @param color2 Bottom left color
+     * @param color3 Top right color
+     * @param color4 Bottom right color
      */
-    public void drawCenteredString(MatrixStack matrixStack, String text, float x, float y, float z, Color color1, Color color2) {
-        drawString(matrixStack, text, x - (float) this.getWidth(text) / 2, y - (float) this.getHeight() / 2, z, color1, color2);
-    }
-
-    /**
-     * Render a centered text with a shadow on the screen using the font of the font renderer.
-     *
-     * @param matrixStack Current matrix stack
-     * @param text        Text to render
-     * @param x           X position
-     * @param y           Y position
-     * @param z           Z position
-     * @param color1      Color of the start of the gradient
-     * @param color1      Color of the end of the gradient
-     */
-    public void drawCenteredStringShadow(MatrixStack matrixStack, String text, float x, float y, float z, Color color1, Color color2) {
-        drawStringShadow(matrixStack, text, x - (float) this.getWidth(text) / 2, y - (float) this.getHeight() / 2, z, color1, color2);
+    public void drawCenteredString(String text, float x, float y, Color color1, Color color2, Color color3, Color color4) {
+        drawString(text, x - this.getWidth(text) / 2, y - this.getHeight() / 2, color1, color2, color3, color4);
     }
 
     /**
      * Render a text on the screen using the font of the font renderer.
      *
-     * @param matrixStack Current matrix stack
-     * @param text        Text to render
-     * @param x           X position
-     * @param y           Y position
-     * @param z           Z position
-     * @param color1      Starting color of the gradient
-     * @param color2      Ending color of the gradient
+     * @param text   Text to render
+     * @param x      X position
+     * @param y      Y Position
+     * @param color1 Top left color
+     * @param color2 Bottom left color
+     * @param color3 Top right color
+     * @param color4 Bottom right color
      */
-    public void drawString(MatrixStack matrixStack, String text, float x, float y, float z, Color color1, Color color2) {
-        matrixStack.push();
-        matrixStack.scale(0.25f, 0.25f, 1);
-        x *= 4;
-        y *= 4;
-        boolean gradient = !color1.equals(color2);
+    public void drawString(String text, float x, float y, Color color1, Color color2, Color color3, Color color4) {
+        int width = getRealWidth(text);
+        x *= upscale_factor * 2;
+        y *= upscale_factor * 2;
 
-        //set width for gradient calculation (can be skipped if no gradient is present)
-        int width = 0;
-        if (gradient) width = getRealWidth(text);
-
-        //set up all the rendering parameters (mostly copied from minecraft font renderer)
-        int light = LightmapTextureManager.MAX_LIGHT_COORDINATE;
-        RenderSystem.enableBlend();
-        RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthFunc(519);
-        RenderSystem.depthMask(true);
-        RenderSystem.setShader(GameRenderer::getRenderTypeTextSeeThroughShader);
-        RenderSystem.setShaderTexture(0, font.getTexture().getId());
-        Matrix4f matrix = matrixStack.peek().getPositionMatrix();
-        BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT);
+        //create buffer and bind texture atlas of the font
+        glEnable(GL_BLEND);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        BufferBuilder2d buffer = new BufferBuilder2d(GL_TRIANGLES, VertexModes.POSITION_COLOR_TEXTURE, Shaders.getPositionColorTextureShader());
+        buffer.setTexture(this.font.getTexture().getId());
+        buffer.scalePosition(downscale_factor);
 
         //iterate through characters of the string and draw them next to each other
         float x_offset = x;
         for (char character : text.toCharArray()) {
             //get texture data for given character or if not supported get the placeholder
             TTFFontTexture.CharTextureData charData = font.getTexture().getCharData(character);
-            //check if a gradient is present
-            if (gradient) {
-                //calculate the color of the current position in the gradient
-                Color gradient1 = ColorHelper.gradientPoint(color1, color2, x_offset / width);
-                Color gradient2 = ColorHelper.gradientPoint(color1, color2, (x_offset + charData.width()) / width);
-                x_offset = drawChar(bufferBuilder, matrix, charData, x_offset, y, z, gradient1, gradient2, light) + SPACING;
-            } else {
-                x_offset = drawChar(bufferBuilder, matrix, charData, x_offset, y, z, color1, color2, light) + SPACING;
-            }
-        }
+            //calculate the color of the current position in the gradient
+            Color gradient1 = ColorHelper.gradientPoint(color1, color3, x_offset / width);
+            Color gradient2 = ColorHelper.gradientPoint(color2, color4, x_offset / width);
+            Color gradient3 = ColorHelper.gradientPoint(color1, color3, (x_offset + charData.width()) / width);
+            Color gradient4 = ColorHelper.gradientPoint(color2, color4, (x_offset + charData.width()) / width);
+            x_offset = drawChar(buffer, charData, x_offset, y, gradient1, gradient2, gradient3, gradient4);
 
-        //finish rendering
-        bufferBuilder.end();
-        BufferRenderer.draw(bufferBuilder);
-        matrixStack.pop();
+        }
+        buffer.draw();
     }
 
-    private float drawChar(BufferBuilder bufferBuilder, Matrix4f matrix, TTFFontTexture.CharTextureData charData, float x1, float y1, float z, Color color1, Color color2, int light) {
-        int c1 = color1.getRGB();
-        int c2 = color2.getRGB();
-
-        float x2 = x1 + charData.width();
-        float y2 = y1 + charData.height();
+    private float drawChar(BufferBuilder2d buffer, TTFFontTexture.CharTextureData charData, float x, float y, Color color1, Color color2, Color color3, Color color4) {
+        float x2 = x + charData.width();
+        float y2 = y + charData.height();
 
         //draw the quad for the character
-        bufferBuilder.vertex(matrix, x1, y2, z)
-                .color(c1)
-                .texture(charData.u(), charData.v2())
-                .light(light)
-                .next();
-        bufferBuilder.vertex(matrix, x2, y2, z)
-                .color(c2)
-                .texture(charData.u2(), charData.v2())
-                .light(light)
-                .next();
-        bufferBuilder.vertex(matrix, x2, y1, z)
-                .color(c2)
-                .texture(charData.u2(), charData.v())
-                .light(light)
-                .next();
-        bufferBuilder.vertex(matrix, x1, y1, z)
-                .color(c1)
-                .texture(charData.u(), charData.v())
-                .light(light)
-                .next();
+        buffer.vert(x, y2).color(color1).uv(charData.u(), charData.v()).end();
+        buffer.vert(x, y).color(color2).uv(charData.u(), charData.v2()).end();
+        buffer.vert(x2, y).color(color4).uv(charData.u2(), charData.v2()).end();
+        buffer.vert(x2, y).color(color4).uv(charData.u2(), charData.v2()).end();
+        buffer.vert(x2, y2).color(color3).uv(charData.u2(), charData.v()).end();
+        buffer.vert(x, y2).color(color1).uv(charData.u(), charData.v()).end();
 
+        //return the position of the end of the character
         return x2;
     }
 
@@ -231,12 +136,12 @@ public class TTFFontRenderer {
      * @param string String to draw
      * @return Width of the string
      */
-    public int getWidth(String string) {
-        return getRealWidth(string) / 4;
+    public float getWidth(String string) {
+        return getRealWidth(string) * downscale_factor;
     }
 
     /**
-     * Get the real width of a string when drawn using this font.
+     * Get the unscaled width of a string when drawn using this font.
      *
      * @param string String to draw
      * @return Width of the string
@@ -246,15 +151,15 @@ public class TTFFontRenderer {
         for (char character : string.toCharArray()) {
             width += font.getTexture().getCharData(character).width();
         }
-        return width + SPACING * (string.length() - 1);
+        return width;
     }
 
     /**
      * Get the height of this font when drawing with it.
      *
-     * @return
+     * @return Height of the font
      */
-    public int getHeight() {
-        return font.getFontMetrics().getHeight() * font.getFont().getSize() / 8;
+    public float getHeight() {
+        return font.getTexture().getCharData('0').height() * downscale_factor;
     }
 }

@@ -14,9 +14,6 @@ public class TTFFont {
     private final Font font;
 
     @Getter
-    private final FontMetrics fontMetrics;
-
-    @Getter
     private final TTFFontTexture texture;
 
     /**
@@ -36,7 +33,6 @@ public class TTFFont {
             font = new Font("Arial", Font.PLAIN, 16);
         }
         this.font = font.deriveFont(size);
-        this.fontMetrics = new Canvas().getFontMetrics(font);
         texture = new TTFFontTexture(this.font, anti_alias);
     }
 

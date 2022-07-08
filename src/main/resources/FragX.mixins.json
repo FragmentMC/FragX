@@ -6,7 +6,8 @@
   "mixins": [
   ],
   "client": [
-    "client.MainMenuRenderMixin"
+    "client.MainMenuRenderMixin",
+    "client.WindowMixin"
   ],
   "injectors": {
     "defaultRequire": 1

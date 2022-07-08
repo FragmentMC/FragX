@@ -46,7 +46,7 @@ public class TTFFontTexture {
         for (; i < char_count; l++) {
             char character = (char) l;
             if (font.canDisplay(character)) {
-                int char_width = fontMetrics.charWidth(character);
+                int char_width = fontMetrics.charWidth(character) + fontMetrics.getMaxAdvance();
                 width += char_width;
                 if (char_width > max_width) max_width = char_width;
                 i++;
@@ -82,7 +82,7 @@ public class TTFFontTexture {
             }
             graphics.drawString(character + "", pos_x, pos_y - fontMetrics.getDescent());
             chars[character] = new CharTextureData((float) pos_x / size, (float) (pos_y - height) / size, (float) (pos_x + char_width) / size, (float) pos_y / size, char_width, height);
-            pos_x += char_width + PADDING;
+            pos_x += char_width + PADDING + fontMetrics.getMaxAdvance();
         }
         graphics.dispose();
 
@@ -106,6 +106,7 @@ public class TTFFontTexture {
         for (int y = 0; y < image.getHeight(); ++y) {
             for (int x = 0; x < image.getWidth(); ++x) {
                 int pixel = pixels[y * image.getWidth() + x];
+                if (pixel == 0) pixel = 16777215;
                 buffer.put((byte) (pixel >> 16 & 0xFF));
                 buffer.put((byte) (pixel >> 8 & 0xFF));
                 buffer.put((byte) (pixel & 0xFF));
