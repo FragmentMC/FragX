@@ -8,7 +8,7 @@ import net.minecraft.client.util.Window;
  */
 public class ResizeWindowEvent extends Event {
     @Getter
-    private Window window;
+    private final Window window;
 
     /**
      * @param window Window object

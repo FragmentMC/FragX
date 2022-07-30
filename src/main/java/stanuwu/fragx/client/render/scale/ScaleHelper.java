@@ -6,9 +6,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.util.Window;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
-import stanuwu.fragx.client.event.EventHandler;
-import stanuwu.fragx.client.event.EventType;
-import stanuwu.fragx.client.event.events.ResizeWindowEvent;
+import stanuwu.fragx.client.event.Events;
 
 import java.nio.FloatBuffer;
 
@@ -27,7 +25,7 @@ public class ScaleHelper {
      */
     public void init() {
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> scaleChange(client.getWindow()));
-        EventHandler.getInstance().register(EventType.RESIZE_WINDOW, event -> scaleChange(((ResizeWindowEvent) event).getWindow()));
+        Events.RESIZE_WINDOW.register(event -> scaleChange(event.getWindow()));
     }
 
     /**
